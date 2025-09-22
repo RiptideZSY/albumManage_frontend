@@ -62,7 +62,6 @@ export const useAlbums = () => {
     }
   };
 
-  // 暂时没用到
   // 删除专辑
   const deleteAlbum = async (id) => {
     try {

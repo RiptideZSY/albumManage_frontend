@@ -20,24 +20,25 @@ export const useTransactions = () => {
       
       // 合并分页参数
       const queryParams = {
-        page: params.current || pagination.current,
-        limit: params.pageSize || pagination.pageSize,
-        ...params
+        // page: params.current || pagination.current,
+        // limit: params.pageSize || pagination.pageSize,
+        // ...params
       };
       
       const response = await transactionAPI.getAll(queryParams);
       
       setTransactions(response.transactions || response);
       
+      // 暂时不分页 请求全量数据
       // 更新分页信息
-      if (response.total !== undefined) {
-        setPagination(prev => ({
-          ...prev,
-          current: queryParams.page,
-          pageSize: queryParams.limit,
-          total: response.total
-        }));
-      }
+      // if (response.total !== undefined) {
+      //   setPagination(prev => ({
+      //     ...prev,
+      //     current: queryParams.page,
+      //     pageSize: queryParams.limit,
+      //     total: response.total
+      //   }));
+      // }
     } catch (err) {
       const errorMsg = err.message || '获取交易记录失败';
       setError(errorMsg);

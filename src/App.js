@@ -1,11 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import * as _ from 'lodash'
-import { Table, Form, Input, Button, Select, message, Card, Divider, Modal, Tag } from 'antd';
-import { PlusOutlined, ImportOutlined, ExportOutlined } from '@ant-design/icons';
-import { useAlbums } from './hooks/useAlbums';
-import { useTransactions } from './hooks/useTransactions';
+import React, { useState, useEffect } from "react";
+import * as _ from "lodash";
+import {
+  Table,
+  Form,
+  Input,
+  Button,
+  Select,
+  message,
+  Card,
+  Divider,
+  Modal,
+  Tag,
+  Popconfirm,
+} from "antd";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ImportOutlined,
+  ExportOutlined,
+} from "@ant-design/icons";
+import { useAlbums } from "./hooks/useAlbums";
+import { useTransactions } from "./hooks/useTransactions";
 
-import './App.css';
+import "./App.css";
 
 const { Option } = Select;
 
@@ -16,12 +34,21 @@ function App() {
   const [transactionForm] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const { albums, loading,addAlbum,updateAlbum,fetchAlbums } = useAlbums();
-  const { transactions,createTransaction } = useTransactions();
+  const {
+    albums,
+    loading: albumLoading,
+    addAlbum,
+    updateAlbum,
+    fetchAlbums,
+    deleteAlbum,
+  } = useAlbums();
+  const {
+    transactions,
+    loading: transactionsLoading,
+    createTransaction,
+  } = useTransactions();
 
-
-  console.log(transactions,albums)
-
+  console.log(transactions, albums);
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -36,15 +63,15 @@ function App() {
   const onAddAlbum = async (values) => {
     try {
       await addAlbum({
-        id:  `${values.title}-${values.artist}`,
+        id: `${values.title}-${values.artist}`,
         ...values,
         stock: 0,
-        lastUpdated: new Date().toISOString()
-    });
+        lastUpdated: new Date().toISOString(),
+      });
       albumForm.resetFields();
       setIsModalVisible(false);
     } catch (error) {
-      message.error('添加专辑失败');
+      message.error("添加专辑失败");
     }
   };
 
@@ -54,115 +81,161 @@ function App() {
       // 在实际应用中，这里应该调用API Todo
       // albumId用_id吧
       const { albumId, type, quantity, notes } = values;
-      
-      const quantityNumber = parseInt(quantity)
-      
+
+      const quantityNumber = parseInt(quantity);
+
+      const targetAlbum = albums.find((each) => (each._id = albumId));
       // 添加交易记录
       const newTransaction = {
         albumId: albumId,
         type,
-        quantity:quantityNumber,
+        quantity: quantityNumber,
         date: new Date().toISOString(),
-        notes
+        notes,
+        artist: targetAlbum.artist,
+        title: targetAlbum.title,
       };
 
       await createTransaction(newTransaction);
 
-      await fetchAlbums()
+      await fetchAlbums();
       // await updateAlbum(updatedAlbum._id, {
       //   stock: newStock
       // })
 
       transactionForm.resetFields();
     } catch (error) {
-      message.error('库存更新失败');
+      message.error("库存更新失败");
+    }
+  };
+
+  // 处理删除专辑
+  const handleDelete = async (id) => {
+    try {
+      await deleteAlbum(id);
+      await fetchAlbums();
+    } catch (error) {
+      // 错误已经在hook中处理
     }
   };
 
   // 表格列定义
   const albumColumns = [
     {
-      title: '专辑名称',
-      dataIndex: 'title',
-      key: 'title',
+      title: "专辑名称",
+      dataIndex: "title",
+      key: "title",
     },
     {
-      title: '歌手',
-      dataIndex: 'artist',
-      key: 'artist',
+      title: "歌手",
+      dataIndex: "artist",
+      key: "artist",
     },
     {
-      title: '发行年份',
-      dataIndex: 'releaseYear',
-      key: 'releaseYear',
+      title: "发行年份",
+      dataIndex: "releaseYear",
+      key: "releaseYear",
     },
     {
-      title: '库存',
-      dataIndex: 'stock',
-      key: 'stock',
+      title: "库存",
+      dataIndex: "stock",
+      key: "stock",
       render: (stock) => (
-        <span style={{ color: stock > 0 ? 'green' : 'red', fontWeight: 'bold' }}>
+        <span
+          style={{ color: stock > 0 ? "green" : "red", fontWeight: "bold" }}
+        >
           {stock}
         </span>
       ),
     },
     {
-      title: '操作',
-      key: 'action',
+      title: "操作",
+      key: "action",
       render: (_, record) => (
-        <Button type="link" onClick={() => {
-          transactionForm.setFieldsValue({ albumId: record._id.toString() });
-        }}>
+        <Button
+          type="link"
+          onClick={() => {
+            transactionForm.setFieldsValue({ albumId: record._id.toString() });
+          }}
+        >
           库存操作
         </Button>
       ),
+    },
+    {
+      title: "",
+      key: "delete",
+      render: (_, record) => {
+        return (
+          <Popconfirm
+            title="删除专辑"
+            description="确定要删除这张专辑吗？"
+            onConfirm={() => handleDelete(record._id)}
+            okText="确定"
+            cancelText="取消"
+            okType="danger"
+          >
+            <Button type="link" danger size="small" icon={<DeleteOutlined />}>
+              删除
+            </Button>
+          </Popconfirm>
+        );
+      },
     },
   ];
 
   const transactionColumns = [
     {
-      title: '日期',
-      dataIndex: 'date',
-      key: 'date',
+      title: "日期",
+      dataIndex: "date",
+      key: "date",
       render: (date) => new Date(date).toLocaleDateString(),
     },
     {
-      title: '专辑',
-      key: 'album',
-      filters: _.uniqBy(albums, (each)=> `${each.title} - ${each.artist}`).map((each) => {
-        return {
-          text: `${each.title} - ${each.artist}`,
-         value: `${each.title} - ${each.artist}`
+      title: "专辑",
+      key: "album",
+      filters: _.uniqBy(albums, (each) => `${each.title} - ${each.artist}`).map(
+        (each) => {
+          return {
+            text: `${each.title} - ${each.artist}`,
+            value: `${each.title} - ${each.artist}`,
+          };
         }
-      }),
-      onFilter: (value, record) =>{
-        const album = albums.find(a => a._id === record.albumId?._id);
-       return `${album?.title} - ${album?.artist}` === value
+      ),
+      onFilter: (value, record) => {
+        const album = albums.find((a) => a._id === record.albumId?._id);
+        return `${album?.title} - ${album?.artist}` === value;
       },
       render: (record) => {
-        const album = albums.find(a => a._id === record.albumId?._id);
-        return album ? `${album.title} - ${album.artist}` : 'Unknown Album';
+        const album = albums.find((a) => a._id === record.albumId?._id);
+        if (album) {
+          return `${album.title} - ${album.artist}`;
+        }
+
+        return record?.title
+          ? `${record.title} - ${record.artist}`
+          : "Unknown Album";
       },
     },
     {
-      title: '类型',
-      dataIndex: 'type',
-      key: 'type',
+      title: "类型",
+      dataIndex: "type",
+      key: "type",
       render: (type) => (
-        <Tag color={type === 'in' ? 'green' : 'red'}>
-          {type === 'in' ? '入库' : '出库'}
+        <Tag color={type === "in" ? "green" : "red"}>
+          {type === "in" ? "入库" : "出库"}
         </Tag>
       ),
     },
     {
-      title: '数量',
-      dataIndex: 'quantity',
-      key: 'quantity',
+      title: "数量",
+      dataIndex: "quantity",
+      key: "quantity",
     },
     {
-      title: '备注',
-      dataIndex: 'notes',
-      key: 'notes',
+      title: "备注",
+      dataIndex: "notes",
+      key: "notes",
     },
   ];
 
@@ -172,7 +245,7 @@ function App() {
         <h1>专辑库存管理</h1>
         <p>跟踪入库和出库记录</p>
       </header>
-      
+
       <div className="main-content">
         <div className="control-panel">
           <Card className="control-card" title="库存操作">
@@ -181,35 +254,51 @@ function App() {
               layout="vertical"
               onFinish={onTransaction}
             >
-              <Form.Item name="albumId" label="选择专辑" rules={[{ required: true, message: '请选择专辑' }]}>
+              <Form.Item
+                name="albumId"
+                label="选择专辑"
+                rules={[{ required: true, message: "请选择专辑" }]}
+              >
                 <Select placeholder="选择专辑">
-                  {albums.map(album => (
+                  {albums.map((album) => (
                     <Option key={album._id} value={album._id.toString()}>
                       {album.title} - {album.artist}
                     </Option>
                   ))}
                 </Select>
               </Form.Item>
-              
+
               <div className="form-row">
-                <Form.Item name="type" label="操作类型" rules={[{ required: true, message: '请选择操作类型' }]}>
+                <Form.Item
+                  name="type"
+                  label="操作类型"
+                  rules={[{ required: true, message: "请选择操作类型" }]}
+                >
                   <Select placeholder="选择类型">
                     <Option value="in">入库</Option>
                     <Option value="out">出库</Option>
                   </Select>
                 </Form.Item>
-                
-                <Form.Item name="quantity" label="数量" rules={[{ required: true, message: '请输入数量' }]}>
+
+                <Form.Item
+                  name="quantity"
+                  label="数量"
+                  rules={[{ required: true, message: "请输入数量" }]}
+                >
                   <Input type="number" min={1} placeholder="数量" />
                 </Form.Item>
               </div>
-              
+
               <Form.Item name="notes" label="备注">
                 <Input.TextArea placeholder="备注信息" />
               </Form.Item>
-              
+
               <Form.Item>
-                <Button type="primary" htmlType="submit" icon={<ImportOutlined />}>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  icon={<ImportOutlined />}
+                >
                   提交库存操作
                 </Button>
               </Form.Item>
@@ -217,11 +306,11 @@ function App() {
           </Card>
 
           <Card className="control-card" title="快速操作">
-            <Button 
-              type="primary" 
-              icon={<PlusOutlined />} 
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
               onClick={showModal}
-              style={{ marginBottom: '16px' }}
+              style={{ marginBottom: "16px" }}
             >
               添加新专辑
             </Button>
@@ -232,7 +321,9 @@ function App() {
               </div>
               <div className="stat-item">
                 <span className="stat-label">总库存量</span>
-                <span className="stat-value">{albums.reduce((sum, album) => sum + album.stock, 0)}</span>
+                <span className="stat-value">
+                  {albums.reduce((sum, album) => sum + album.stock, 0)}
+                </span>
               </div>
               <div className="stat-item">
                 <span className="stat-label">出入库记录条数</span>
@@ -245,47 +336,53 @@ function App() {
         <Divider />
 
         <h2>专辑库存列表</h2>
-        <Table 
-          dataSource={albums} 
-          columns={albumColumns} 
-          rowKey="id" 
+        <Table
+          dataSource={albums}
+          columns={albumColumns}
+          rowKey="id"
+          loading={albumLoading}
           pagination={{ pageSize: 5 }}
         />
 
         <Divider />
 
         <h2>出入库历史</h2>
-        <Table 
-          dataSource={transactions} 
-          columns={transactionColumns} 
-          rowKey="id" 
+        <Table
+          dataSource={transactions}
+          columns={transactionColumns}
+          rowKey="id"
           pagination={{ pageSize: 5 }}
+          loading={transactionsLoading}
         />
       </div>
 
-      <Modal 
-        title="添加新专辑" 
-        open={isModalVisible} 
+      <Modal
+        title="添加新专辑"
+        open={isModalVisible}
         onCancel={handleCancel}
         footer={null}
       >
-        <Form
-          form={albumForm}
-          layout="vertical"
-          onFinish={onAddAlbum}
-        >
-          <Form.Item name="title" label="专辑名称" rules={[{ required: true, message: '请输入专辑名称' }]}>
+        <Form form={albumForm} layout="vertical" onFinish={onAddAlbum}>
+          <Form.Item
+            name="title"
+            label="专辑名称"
+            rules={[{ required: true, message: "请输入专辑名称" }]}
+          >
             <Input placeholder="专辑名称" />
           </Form.Item>
-          
-          <Form.Item name="artist" label="歌手" rules={[{ required: true, message: '请输入歌手名称' }]}>
+
+          <Form.Item
+            name="artist"
+            label="歌手"
+            rules={[{ required: true, message: "请输入歌手名称" }]}
+          >
             <Input placeholder="歌手" />
           </Form.Item>
-          
+
           <Form.Item name="releaseYear" label="发行年份">
             <Input placeholder="发行年份" type="number" />
           </Form.Item>
-          
+
           <Form.Item>
             <Button type="primary" htmlType="submit">
               添加专辑
