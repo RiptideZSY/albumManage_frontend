@@ -209,11 +209,11 @@ function App() {
       render: (record) => {
         const album = albums.find((a) => a._id === record.albumId?._id);
         if (album) {
-          return `${album.title} - ${album.artist}`;
+          return `${album.title}`;
         }
 
         return record?.title
-          ? `${record.title} - ${record.artist}`
+          ? `${record.title}`
           : "Unknown Album";
       },
     },
@@ -262,7 +262,7 @@ function App() {
                 <Select placeholder="选择专辑">
                   {albums.map((album) => (
                     <Option key={album._id} value={album._id.toString()}>
-                      {album.title} - {album.artist}
+                      {album.title}
                     </Option>
                   ))}
                 </Select>
