@@ -26,11 +26,14 @@ import { useTransactions } from "./hooks/useTransactions";
 import "./App.css";
 
 const { Option } = Select;
+const { Search } = Input;
 
 function App() {
   const [albumForm] = Form.useForm();
   const [transactionForm] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const [displayAlbums, setDisplayAlbums] = useState([]);
 
   const [isAllTransactionModalVisible, setIsAllTransactionModalVisible] =
     useState(false);
@@ -52,6 +55,9 @@ function App() {
     fetchTransactions,
   } = useTransactions();
 
+  React.useEffect(() => {
+    setDisplayAlbums(albums);
+  }, [albums]);
   const showModal = () => {
     setIsModalVisible(true);
   };
@@ -85,7 +91,7 @@ function App() {
 
       const quantityNumber = parseInt(quantity);
 
-      const targetAlbum = albums.find((each) => (each._id === albumId));
+      const targetAlbum = albums.find((each) => each._id === albumId);
       // 添加交易记录
       const newTransaction = {
         albumId: albumId,
@@ -117,6 +123,24 @@ function App() {
       await fetchAlbums();
     } catch (error) {
       // 错误已经在hook中处理
+    }
+  };
+
+  const onSearch = (text) => {
+    if (!text) {
+      setDisplayAlbums(albums);
+    } else {
+      const filterData = albums.filter((each) => {
+        if (
+          each.title.includes(text) ||
+          each.title.toUpperCase().includes(text.toUpperCase())
+        ) {
+          return true;
+        }
+
+        return false;
+      });
+      setDisplayAlbums(filterData);
     }
   };
 
@@ -344,10 +368,23 @@ function App() {
         </div>
 
         <Divider />
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <h2>专辑库存列表</h2>
+          <Search
+            placeholder="可以搜索专辑名称"
+            allowClear
+            onSearch={onSearch}
+            style={{
+              width: 300,
+              marginLeft: 25,
+              marginTop: 20,
+              marginBottom: 20,
+            }}
+          />
+        </div>
 
-        <h2>专辑库存列表</h2>
         <Table
-          dataSource={albums}
+          dataSource={displayAlbums}
           columns={albumColumns}
           rowKey="id"
           loading={albumLoading}
