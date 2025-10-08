@@ -28,11 +28,12 @@ import "./App.css";
 const { Option } = Select;
 
 function App() {
-  // const [albums, setAlbums] = useState([]);
-  // const [transactions, setTransactions] = useState([]);
   const [albumForm] = Form.useForm();
   const [transactionForm] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const [isAllTransactionModalVisible, setIsAllTransactionModalVisible] =
+    useState(false);
 
   const {
     albums,
@@ -44,11 +45,12 @@ function App() {
   } = useAlbums();
   const {
     transactions,
+    allTransactionsTotal,
+    allTransactions,
     loading: transactionsLoading,
     createTransaction,
+    fetchTransactions,
   } = useTransactions();
-
-  console.log(transactions, albums);
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -212,9 +214,7 @@ function App() {
           return `${album.title}`;
         }
 
-        return record?.title
-          ? `${record.title}`
-          : "Unknown Album";
+        return record?.title ? `${record.title}` : "Unknown Album";
       },
     },
     {
@@ -259,7 +259,16 @@ function App() {
                 label="选择专辑"
                 rules={[{ required: true, message: "请选择专辑" }]}
               >
-                <Select placeholder="选择专辑">
+                <Select
+                  showSearch
+                  placeholder="选择专辑，现在可以输入关键词搜索啦"
+                  optionFilterProp="children"
+                  filterSort={(optionA, optionB) => {
+                    return (optionA?.children ?? "")
+                      .toLowerCase()
+                      .localeCompare((optionB?.children ?? "").toLowerCase());
+                  }}
+                >
                   {albums.map((album) => (
                     <Option key={album._id} value={album._id.toString()}>
                       {album.title}
@@ -327,7 +336,9 @@ function App() {
               </div>
               <div className="stat-item">
                 <span className="stat-label">出入库记录条数</span>
-                <span className="stat-value">{transactions.length}</span>
+                <span className="stat-value">
+                  {allTransactionsTotal || transactions.length}
+                </span>
               </div>
             </div>
           </Card>
@@ -346,15 +357,45 @@ function App() {
 
         <Divider />
 
-        <h2>出入库历史</h2>
+        <h2>出入库历史（最近五条）</h2>
+        <Button
+          type="link"
+          onClick={() => {
+            if (!allTransactions.length) {
+              fetchTransactions();
+            }
+            setIsAllTransactionModalVisible(true);
+          }}
+        >
+          查看全部
+        </Button>
         <Table
           dataSource={transactions}
           columns={transactionColumns}
           rowKey="id"
-          pagination={{ pageSize: 5 }}
+          pagination={"none"}
           loading={transactionsLoading}
         />
       </div>
+
+      <Modal
+        title="全部出入库历史"
+        open={isAllTransactionModalVisible}
+        onCancel={() => {
+          setIsAllTransactionModalVisible(false);
+        }}
+        footer={null}
+        width={1000}
+      >
+        <Table
+          rootClassName={"all-transaction"}
+          dataSource={allTransactions}
+          columns={transactionColumns}
+          rowKey="id"
+          pagination={{ pageSize: 10 }}
+          loading={transactionsLoading}
+        />
+      </Modal>
 
       <Modal
         title="添加新专辑"
