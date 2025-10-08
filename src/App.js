@@ -357,23 +357,25 @@ function App() {
 
         <Divider />
 
-        <h2>出入库历史（最近五条）</h2>
-        <Button
-          type="link"
-          onClick={() => {
-            if (!allTransactions.length) {
-              fetchTransactions();
-            }
-            setIsAllTransactionModalVisible(true);
-          }}
-        >
-          查看全部
-        </Button>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <h2>出入库历史（最近五条）</h2>
+          <Button
+            type="link"
+            onClick={() => {
+              if (!allTransactions.length) {
+                fetchTransactions();
+              }
+              setIsAllTransactionModalVisible(true);
+            }}
+          >
+            查看全部
+          </Button>
+        </div>
         <Table
           dataSource={transactions}
           columns={transactionColumns}
           rowKey="id"
-          pagination={"none"}
+          pagination={false}
           loading={transactionsLoading}
         />
       </div>
