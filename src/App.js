@@ -80,13 +80,12 @@ function App() {
   // 处理库存变动
   const onTransaction = async (values) => {
     try {
-      // 在实际应用中，这里应该调用API Todo
       // albumId用_id吧
       const { albumId, type, quantity, notes } = values;
 
       const quantityNumber = parseInt(quantity);
 
-      const targetAlbum = albums.find((each) => (each._id = albumId));
+      const targetAlbum = albums.find((each) => (each._id === albumId));
       // 添加交易记录
       const newTransaction = {
         albumId: albumId,
