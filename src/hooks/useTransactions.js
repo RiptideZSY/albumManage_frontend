@@ -23,7 +23,7 @@ export const useTransactions = () => {
 
         const isAll = !params.limit;
         // 合并分页参数
-        // Todo 先默认取十条 点击查看所有交易记录再出弹窗
+        // 先默认取十条 点击查看所有交易记录再出弹窗
         const queryParams = {
           // page: params.current || pagination.current,
           // limit: params.pageSize || pagination.pageSize,

@@ -1,0 +1,23 @@
+/* 自定义卡片悬停效果 */
+.ant-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ant-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* 渐变按钮样式 */
+.gradient-btn {
+  background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.gradient-btn:hover {
+  background: linear-gradient(135deg, #40a9ff 0%, #9254de 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+}
