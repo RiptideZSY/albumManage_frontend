@@ -1,12 +1,12 @@
 /* 自定义卡片悬停效果 */
-.ant-card {
+/* .ant-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .ant-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12) !important;
-}
+} */
 
 /* 渐变按钮样式 */
 .gradient-btn {

@@ -1,22 +1,22 @@
-import axios from 'axios';
+import axios from "axios";
 
 // 创建axios实例
 const api = axios.create({
-    baseURL:
-      process.env.NODE_ENV === "development"
-        ? "http://localhost:3001"
-        : "https://album-manage-backend.popmerchhelper.top",
-    timeout: 600000,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  baseURL:
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:3001"
+      : "https://album-manage-backend.popmerchhelper.top",
+  timeout: 600000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
 // 请求拦截器
 api.interceptors.request.use(
   (config) => {
     // 可以在这里添加认证token等
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -36,8 +36,8 @@ api.interceptors.response.use(
     // 统一错误处理
     if (error.response?.status === 401) {
       // 处理未认证错误
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+      localStorage.removeItem("token");
+      window.location.href = "/login";
     }
     return Promise.reject(error.response?.data || error);
   }
@@ -46,31 +46,64 @@ api.interceptors.response.use(
 // 专辑相关API
 export const albumAPI = {
   // 获取所有专辑
-  getAll: (params) => api.get('/api/albums', { params }),
-  
+  getAll: (params) => api.get("/api/albums", { params }),
+
   // 获取单个专辑
   getById: (id) => api.get(`/api/albums/${id}`),
-  
+
   // 创建新专辑
-  create: (albumData) => api.post('/api/albums', albumData),
-  
+  create: (albumData) => api.post("/api/albums", albumData),
+
   // 更新专辑
   update: (id, albumData) => api.put(`/api/albums/${id}`, albumData),
-  
+
   // 删除专辑
   delete: (id) => api.delete(`/api/albums/${id}`),
 };
 
-// 交易相关API
+// 专辑交易相关API
 export const transactionAPI = {
   // 获取所有交易记录
-  getAll: (params) => api.get('/api/transactions', { params }),
-  
+  getAll: (params) => api.get("/api/transactions", { params }),
+
   // 创建交易记录
-  create: (transactionData) => api.post('/api/transactions', transactionData),
-  
+  create: (transactionData) => api.post("/api/transactions", transactionData),
+
   // 获取特定专辑的交易记录
-  getByAlbumId: (albumId, params) => api.get(`/api/transactions/album/${albumId}`, { params }),
+  getByAlbumId: (albumId, params) =>
+    api.get(`/api/transactions/album/${albumId}`, { params }),
+};
+
+// 专辑相关API
+export const cardAPI = {
+  // 获取所有
+  getAll: (params) => api.get("/api/cards", { params }),
+
+  // 获取单个
+  getById: (id) => api.get(`/api/cards/${id}`),
+
+  // 创建新小卡
+  create: (cardData) => api.post("/api/cards", cardData),
+
+  // 更新专辑
+  update: (id, cardData) => api.put(`/api/cards/${id}`, cardData),
+
+  // 删除专辑
+  delete: (id) => api.delete(`/api/cards/${id}`),
+};
+
+// 小卡交易相关API
+export const cardTransactionAPI = {
+  // 获取所有交易记录
+  getAll: (params) => api.get("/api/cardtransactions", { params }),
+
+  // 创建交易记录
+  create: (transactionData) =>
+    api.post("/api/cardtransactions", transactionData),
+
+  // 获取特定专辑的交易记录
+  getByCardId: (cardId, params) =>
+    api.get(`/api/cardtransactions/${cardId}`, { params }),
 };
 
 export default api;

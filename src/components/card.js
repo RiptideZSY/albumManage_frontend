@@ -15,100 +15,94 @@ import {
 } from "antd";
 import {
   PlusOutlined,
-  EditOutlined,
   DeleteOutlined,
   ImportOutlined,
-  ExportOutlined,
 } from "@ant-design/icons";
-import { useAlbums } from "../hooks/useAlbums";
-import { useTransactions } from "../hooks/useTransactions";
+import { useCards } from "../hooks/useCards";
+import { useCardTransactions } from "../hooks/useCardTransactions";
 
 import "./album.css";
 
 const { Option } = Select;
 const { Search } = Input;
 
-function AlbumComponent() {
-  const [albumForm] = Form.useForm();
+function CardComponent() {
+  const [cardForm] = Form.useForm();
   const [transactionForm] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const [displayAlbums, setDisplayAlbums] = useState([]);
+  const [displayCards, setDisplayCards] = useState([]);
 
   const [isAllTransactionModalVisible, setIsAllTransactionModalVisible] =
     useState(false);
 
   const {
-    albums,
-    loading: albumLoading,
-    addAlbum,
-    updateAlbum,
-    fetchAlbums,
-    deleteAlbum,
-  } = useAlbums();
+    cards,
+    loading: cardLoading,
+    addCard,
+    updateCard,
+    fetchCards,
+    deleteCard,
+  } = useCards();
   const {
-    transactions,
-    allTransactionsTotal,
-    allTransactions,
+    cardTransactions,
+    allCardTransactionsTotal,
+    allCardTransactions,
     loading: transactionsLoading,
-    createTransaction,
-    fetchTransactions,
-  } = useTransactions();
+    createCardTransaction,
+    fetchCardTransactions,
+  } = useCardTransactions();
 
   React.useEffect(() => {
-    setDisplayAlbums(albums);
-  }, [albums]);
+    setDisplayCards(cards);
+  }, [cards]);
   const showModal = () => {
     setIsModalVisible(true);
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
-    albumForm.resetFields();
+    cardForm.resetFields();
   };
 
-  // 添加新专辑
-  const onAddAlbum = async (values) => {
+  // 添加新小卡
+  const onAddCard = async (values) => {
     try {
-      await addAlbum({
+      await addCard({
         id: `${values.title}-${values.artist}`,
         ...values,
         stock: 0,
         lastUpdated: new Date().toISOString(),
       });
-      albumForm.resetFields();
+      cardForm.resetFields();
       setIsModalVisible(false);
     } catch (error) {
-      message.error("添加专辑失败");
+      message.error("添加小卡失败");
     }
   };
 
   // 处理库存变动
   const onTransaction = async (values) => {
     try {
-      // albumId用_id吧
-      const { albumId, type, quantity, notes } = values;
+      const { cardId, type, quantity, notes } = values;
 
       const quantityNumber = parseInt(quantity);
 
-      const targetAlbum = albums.find((each) => each._id === albumId);
+      const targetCard = cards.find((each) => each._id === cardId);
       // 添加交易记录
       const newTransaction = {
-        albumId: albumId,
+        cardId: cardId,
         type,
         quantity: quantityNumber,
         date: new Date().toISOString(),
         notes,
-        artist: targetAlbum.artist,
-        title: targetAlbum.title,
+        artist: targetCard.artist,
+        title: targetCard.title,
       };
 
-      await createTransaction(newTransaction);
+      await createCardTransaction(newTransaction);
 
-      await fetchAlbums();
-      // await updateAlbum(updatedAlbum._id, {
-      //   stock: newStock
-      // })
+      await fetchCards();
 
       transactionForm.resetFields();
     } catch (error) {
@@ -116,11 +110,11 @@ function AlbumComponent() {
     }
   };
 
-  // 处理删除专辑
+  // 处理删除小卡
   const handleDelete = async (id) => {
     try {
-      await deleteAlbum(id);
-      await fetchAlbums();
+      await deleteCard(id);
+      await fetchCards();
     } catch (error) {
       // 错误已经在hook中处理
     }
@@ -128,9 +122,9 @@ function AlbumComponent() {
 
   const onSearch = (text) => {
     if (!text) {
-      setDisplayAlbums(albums);
+      setDisplayCards(cards);
     } else {
-      const filterData = albums.filter((each) => {
+      const filterData = cards.filter((each) => {
         if (
           each.title.includes(text) ||
           each.title.toUpperCase().includes(text.toUpperCase())
@@ -140,14 +134,14 @@ function AlbumComponent() {
 
         return false;
       });
-      setDisplayAlbums(filterData);
+      setDisplayCards(filterData);
     }
   };
 
   // 表格列定义
-  const albumColumns = [
+  const cardColumns = [
     {
-      title: "专辑名称",
+      title: "小卡名称",
       dataIndex: "title",
       key: "title",
     },
@@ -155,11 +149,6 @@ function AlbumComponent() {
       title: "歌手",
       dataIndex: "artist",
       key: "artist",
-    },
-    {
-      title: "发行年份",
-      dataIndex: "releaseYear",
-      key: "releaseYear",
     },
     {
       title: "库存",
@@ -180,7 +169,7 @@ function AlbumComponent() {
         <Button
           type="link"
           onClick={() => {
-            transactionForm.setFieldsValue({ albumId: record._id.toString() });
+            transactionForm.setFieldsValue({ cardId: record._id.toString() });
           }}
         >
           库存操作
@@ -193,8 +182,8 @@ function AlbumComponent() {
       render: (_, record) => {
         return (
           <Popconfirm
-            title="删除专辑"
-            description="确定要删除这张专辑吗？"
+            title="删除小卡"
+            description="确定要删除这张小卡吗？"
             onConfirm={() => handleDelete(record._id)}
             okText="确定"
             cancelText="取消"
@@ -217,9 +206,9 @@ function AlbumComponent() {
       render: (date) => new Date(date).toLocaleDateString(),
     },
     {
-      title: "专辑",
-      key: "album",
-      filters: _.uniqBy(albums, (each) => `${each.title} - ${each.artist}`).map(
+      title: "小卡",
+      key: "card",
+      filters: _.uniqBy(cards, (each) => `${each.title} - ${each.artist}`).map(
         (each) => {
           return {
             text: `${each.title} - ${each.artist}`,
@@ -228,16 +217,16 @@ function AlbumComponent() {
         }
       ),
       onFilter: (value, record) => {
-        const album = albums.find((a) => a._id === record.albumId?._id);
-        return `${album?.title} - ${album?.artist}` === value;
+        const card = cards.find((a) => a._id === record.cardId?._id);
+        return `${card?.title} - ${card?.artist}` === value;
       },
       render: (record) => {
-        const album = albums.find((a) => a._id === record.albumId?._id);
-        if (album) {
-          return `${album.title}`;
+        const card = cards.find((a) => a._id === record.cardId?._id);
+        if (card) {
+          return `${card.title}`;
         }
 
-        return record?.title ? `${record.title}` : "Unknown Album";
+        return record?.title ? `${record.title}` : "Unknown Card";
       },
     },
     {
@@ -264,11 +253,6 @@ function AlbumComponent() {
 
   return (
     <div className="app">
-      {/* <header className="app-header">
-        <h1>专辑库存管理</h1>
-        <p>跟踪入库和出库记录</p>
-      </header> */}
-
       <div className="main-content">
         <div className="control-panel">
           <Card className="control-card" title="库存操作">
@@ -278,13 +262,13 @@ function AlbumComponent() {
               onFinish={onTransaction}
             >
               <Form.Item
-                name="albumId"
-                label="选择专辑"
-                rules={[{ required: true, message: "请选择专辑" }]}
+                name="cardId"
+                label="选择小卡"
+                rules={[{ required: true, message: "请选择小卡" }]}
               >
                 <Select
                   showSearch
-                  placeholder="选择专辑，现在可以输入关键词搜索啦"
+                  placeholder="选择小卡，现在可以输入关键词搜索啦"
                   optionFilterProp="children"
                   filterSort={(optionA, optionB) => {
                     return (optionA?.children ?? "")
@@ -292,9 +276,9 @@ function AlbumComponent() {
                       .localeCompare((optionB?.children ?? "").toLowerCase());
                   }}
                 >
-                  {albums.map((album) => (
-                    <Option key={album._id} value={album._id.toString()}>
-                      {album.title}
+                  {cards.map((card) => (
+                    <Option key={card._id} value={card._id.toString()}>
+                      {card.title}
                     </Option>
                   ))}
                 </Select>
@@ -344,23 +328,23 @@ function AlbumComponent() {
               onClick={showModal}
               style={{ marginBottom: "16px" }}
             >
-              添加新专辑
+              添加新小卡
             </Button>
             <div className="stats">
               <div className="stat-item">
-                <span className="stat-label">专辑类别总数</span>
-                <span className="stat-value">{albums.length}</span>
+                <span className="stat-label">小卡类别总数</span>
+                <span className="stat-value">{cards.length}</span>
               </div>
               <div className="stat-item">
                 <span className="stat-label">总库存量</span>
                 <span className="stat-value">
-                  {albums.reduce((sum, album) => sum + album.stock, 0)}
+                  {cards.reduce((sum, card) => sum + card.stock, 0)}
                 </span>
               </div>
               <div className="stat-item">
                 <span className="stat-label">出入库记录条数</span>
                 <span className="stat-value">
-                  {allTransactionsTotal || transactions.length}
+                  {allCardTransactionsTotal || cardTransactions.length}
                 </span>
               </div>
             </div>
@@ -369,9 +353,9 @@ function AlbumComponent() {
 
         <Divider />
         <div style={{ display: "flex", alignItems: "center" }}>
-          <h2>专辑库存列表</h2>
+          <h2>小卡库存列表</h2>
           <Search
-            placeholder="可以搜索专辑名称"
+            placeholder="可以搜索小卡名称"
             allowClear
             onSearch={onSearch}
             style={{
@@ -384,22 +368,22 @@ function AlbumComponent() {
         </div>
 
         <Table
-          dataSource={displayAlbums}
-          columns={albumColumns}
+          dataSource={displayCards}
+          columns={cardColumns}
           rowKey="id"
-          loading={albumLoading}
+          loading={cardLoading}
           pagination={{ pageSize: 5 }}
         />
 
         <Divider />
 
         <div style={{ display: "flex", alignItems: "center" }}>
-          <h2>专辑出入库历史（最近五条）</h2>
+          <h2>小卡出入库历史（最近五条）</h2>
           <Button
             type="link"
             onClick={() => {
-              if (!allTransactions.length) {
-                fetchTransactions();
+              if (!allCardTransactions.length) {
+                fetchCardTransactions();
               }
               setIsAllTransactionModalVisible(true);
             }}
@@ -408,7 +392,7 @@ function AlbumComponent() {
           </Button>
         </div>
         <Table
-          dataSource={transactions}
+          dataSource={cardTransactions}
           columns={transactionColumns}
           rowKey="id"
           pagination={false}
@@ -427,7 +411,7 @@ function AlbumComponent() {
       >
         <Table
           rootClassName={"all-transaction"}
-          dataSource={allTransactions}
+          dataSource={allCardTransactions}
           columns={transactionColumns}
           rowKey="id"
           pagination={{ pageSize: 10 }}
@@ -436,18 +420,18 @@ function AlbumComponent() {
       </Modal>
 
       <Modal
-        title="添加新专辑"
+        title="添加新小卡"
         open={isModalVisible}
         onCancel={handleCancel}
         footer={null}
       >
-        <Form form={albumForm} layout="vertical" onFinish={onAddAlbum}>
+        <Form form={cardForm} layout="vertical" onFinish={onAddCard}>
           <Form.Item
             name="title"
-            label="专辑名称"
-            rules={[{ required: true, message: "请输入专辑名称" }]}
+            label="小卡名称"
+            rules={[{ required: true, message: "请输入小卡名称" }]}
           >
-            <Input placeholder="专辑名称" />
+            <Input placeholder="小卡名称" />
           </Form.Item>
 
           <Form.Item
@@ -457,14 +441,9 @@ function AlbumComponent() {
           >
             <Input placeholder="歌手" />
           </Form.Item>
-
-          <Form.Item name="releaseYear" label="发行年份">
-            <Input placeholder="发行年份" type="number" />
-          </Form.Item>
-
           <Form.Item>
             <Button type="primary" htmlType="submit">
-              添加专辑
+              添加小卡
             </Button>
           </Form.Item>
         </Form>
@@ -473,4 +452,4 @@ function AlbumComponent() {
   );
 }
 
-export default AlbumComponent;
+export default CardComponent;

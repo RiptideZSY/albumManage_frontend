@@ -233,22 +233,14 @@ function Home() {
                   <CheckCircleOutlined style={{ color: "#52c41a" }} />
                   <Text>专辑库存管理</Text>
                 </Space>
-                <div style={{ marginLeft: 24, marginTop: 4 }}>
-                  <Text type="secondary">
-                    管理专辑库存信息，包括添加、编辑、删除和查看专辑详情
-                  </Text>
-                </div>
+                
               </Col>
               <Col xs={24} sm={12}>
                 <Space>
                   <CheckCircleOutlined style={{ color: "#52c41a" }} />
                   <Text>小卡库存管理</Text>
                 </Space>
-                <div style={{ marginLeft: 24, marginTop: 4 }}>
-                  <Text type="secondary">
-                    管理小卡库存信息，支持按类型筛选和批量操作
-                  </Text>
-                </div>
+                
               </Col>
             </Row>
           </Card>

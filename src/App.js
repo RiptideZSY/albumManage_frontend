@@ -4,7 +4,7 @@ import { ConfigProvider } from "antd";
 import MainLayout from "./components/layout";
 import Home from "./components/home";
 import AlbumComponent from "./components/album";
-import PhotoCardComponent from "./components/photoCard";
+import CardComponent from "./components/card";
 
 import "./App.css";
 
@@ -16,7 +16,7 @@ function App() {
           <Route path="/" element={<MainLayout />}>
             <Route index element={<Home />} />
             <Route path="albums" element={<AlbumComponent />} />
-            <Route path="cards" element={<PhotoCardComponent />} />
+            <Route path="cards" element={<CardComponent />} />
           </Route>
         </Routes>
       </BrowserRouter>
