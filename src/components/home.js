@@ -10,20 +10,7 @@ import "./home.css";
 
 const { Title, Paragraph, Text } = Typography;
 
-function Home() {
-  // 模拟统计数据
-  const statsData = {
-    albums: {
-      total: 128,
-      increase: 12,
-      status: "normal",
-    },
-    cards: {
-      total: 543,
-      increase: 28,
-      status: "good",
-    },
-  };
+function Home({user}) {
 
   // 快速操作列表
   const quickActions = [
@@ -58,7 +45,7 @@ function Home() {
             fontWeight: 700,
           }}
         >
-          欢迎使用库存管理系统
+          欢迎使用库存管理系统，{user?.role === 'admin' ? '管理员' : '访客'}
         </Title>
         <Paragraph
           style={{

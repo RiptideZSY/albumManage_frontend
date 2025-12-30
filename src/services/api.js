@@ -16,7 +16,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // 可以在这里添加认证token等
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("ppmq_albums_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -36,8 +36,9 @@ api.interceptors.response.use(
     // 统一错误处理
     if (error.response?.status === 401) {
       // 处理未认证错误
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      localStorage.removeItem("ppmq_albums_token");
+      // message.error('密码错误！')
+      // window.location.href = "/login";
     }
     return Promise.reject(error.response?.data || error);
   }
@@ -74,7 +75,7 @@ export const transactionAPI = {
     api.get(`/api/transactions/album/${albumId}`, { params }),
 };
 
-// 专辑相关API
+// 小卡相关API
 export const cardAPI = {
   // 获取所有
   getAll: (params) => api.get("/api/cards", { params }),
@@ -106,4 +107,39 @@ export const cardTransactionAPI = {
     api.get(`/api/cardtransactions/${cardId}`, { params }),
 };
 
+export const authAPI = {
+  // 登录
+  login: (username, password) => 
+    api.post('/api/auth/login', { username, password }),
+  
+  // 初始化管理员（仅第一次使用）
+  initAdmin: (username, password) =>
+    api.post('/api/auth/init-admin', { username, password }),
+  
+  // 验证token
+  verifyToken: () =>
+    api.get('/api/auth/verify'),
+  
+  // 获取当前用户信息
+  getMe: () =>
+    api.get('/api/auth/me')
+};
+
+export const visitorAPI = {
+  // 创建访客
+  createVisitor: (visitorData) =>
+    api.post('/api/visitors', visitorData),
+  
+  // 获取所有访客
+  getVisitors: () =>
+    api.get('/api/visitors'),
+  
+  // 更新访客有效期 
+  // updateValidity: (id, validUntil) =>
+  //   api.put(`/api/visitors/${id}/validity`, { validUntil }),
+  
+  // 删除访客
+  deleteVisitor: (id) =>
+    api.delete(`/api/visitors/${id}`)
+};
 export default api;
